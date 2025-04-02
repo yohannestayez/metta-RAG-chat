@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Assistant</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2A96FA;
+            --primary-hover: #1F7BD0;
+            --background: #0F172A;
+            --surface: #1E293B;
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+        }
+        body {
+            background: var(--background);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--surface);
+        }
+        .header-content {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        h1 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        #chat-display {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            background: var(--surface);
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) transparent;
+        }
+        #chat-display::-webkit-scrollbar {
+            width: 6px;
+        }
+        #chat-display::-webkit-scrollbar-thumb {
+            background-color: var(--primary);
+            border-radius: 3px;
+        }
+        .message {
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            max-width: 85%;
+            word-wrap: break-word;
+            animation: messageAppear 0.3s ease-out;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+        @keyframes messageAppear {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .user {
+            background: var(--primary);
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 4px;
+        }
+        .bot {
+            background: rgba(255, 255, 255, 0.05);
+            align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            color: var(--text-primary);
+        }
+        .system {
+            background: rgba(255, 255, 255, 0.03);
+            align-self: center;
+            font-style: italic;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            padding: 0.75rem 1.5rem;
+        }
+        #chat-form {
+            display: flex;
+            gap: 0.75rem;
+            background: var(--surface);
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        #message-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--background);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+        #message-input:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(42, 150, 250, 0.2);
+        }
+        button {
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s, transform 0.1s;
+        }
+        button:hover {
+            background: var(--primary-hover);
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        .file-upload-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .file-upload-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .typing-indicator {
+            display: inline-flex;
+            gap: 4px;
+            padding: 1rem 1.25rem;
+        }
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        @keyframes typing {
+            0%, 40%, 100% { transform: translateY(0); }
+            20% { transform: translateY(-4px); }
+        }
+        @media (max-width: 600px) {
+            main { padding: 1rem; }
+            #chat-form { flex-direction: column; }
+            button, .file-upload-btn { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>AI Assistant</h1>
+            <label for="file-input" class="file-upload-btn">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                Upload PDF
+            </label>
+        </div>
+    </header>
+    <main>
+        <div id="chat-display"></div>
+        <form id="chat-form">
+            <input type="text" id="message-input" placeholder="Ask me anything..." aria-label="Type your message">
+            <button type="submit">Send</button>
+            <input type="file" id="file-input" accept=".pdf" aria-label="Upload PDF file">
+        </form>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatDisplay = document.getElementById('chat-display');
+            const messageInput = document.getElementById('message-input');
+            const chatForm = document.getElementById('chat-form');
+            const fileInput = document.getElementById('file-input');
+
+            chatForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const message = messageInput.value.trim();
+                if (message) {
+                    appendMessage('user', message);
+                    messageInput.value = '';
+                    messageInput.focus();
+                    await sendMessage(message);
+                }
+            });
+
+            fileInput.addEventListener('change', async () => {
+                const file = fileInput.files[0];
+                if (file && file.type === 'application/pdf') {
+                    await uploadFile(file);
+                    fileInput.value = '';
+                } else {
+                    showError('Please select a valid PDF file');
+                }
+            });
+
+            function appendMessage(sender, text) {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message', sender);
+                messageDiv.textContent = text;
+                chatDisplay.appendChild(messageDiv);
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+            }
+
+            async function sendMessage(message) {
+                const typingDiv = createTypingIndicator();
+                chatDisplay.appendChild(typingDiv);
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+
+                try {
+                    const response = await fetch('/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ text: message })
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error('Received non-JSON response');
+                    }
+
+                    const data = await response.json();
+                    chatDisplay.removeChild(typingDiv);
+                    if (data.response) {
+                        appendMessage('bot', data.response);
+                    } else {
+                        showError(data.message || 'Unknown error occurred');
+                    }
+                } catch (error) {
+                    chatDisplay.removeChild(typingDiv);
+                    showError(error.message);
+                }
+            }
+
+            async function uploadFile(file) {
+                const uploadingDiv = document.createElement('div');
+                uploadingDiv.classList.add('message', 'system');
+                uploadingDiv.textContent = 'Analyzing document...';
+                chatDisplay.appendChild(uploadingDiv);
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    const response = await fetch('/chat', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const data = await response.json();
+                    chatDisplay.removeChild(uploadingDiv);
+                    if (data.status === 'success') {
+                        appendMessage('system', data.message || 'Document ready for analysis');
+                    } else {
+                        showError(data.message || 'Document processing failed');
+                    }
+                } catch (error) {
+                    chatDisplay.removeChild(uploadingDiv);
+                    showError(error.message);
+                }
+            }
+
+            function createTypingIndicator() {
+                const typingDiv = document.createElement('div');
+                typingDiv.classList.add('message', 'bot', 'typing-indicator');
+                for (let i = 0; i < 3; i++) {
+                    const dot = document.createElement('div');
+                    dot.classList.add('typing-dot');
+                    dot.style.animationDelay = `${i * 0.2}s`;
+                    typingDiv.appendChild(dot);
+                }
+                return typingDiv;
+            }
+
+            function showError(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.classList.add('message', 'system');
+                errorDiv.textContent = `Error: ${message}`;
+                chatDisplay.appendChild(errorDiv);
+                chatDisplay.scrollTop = chatDisplay.scrollHeight;
+            }
+        });
+    </script>
+</body>
+</html>
