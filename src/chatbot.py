@@ -64,11 +64,6 @@ def load_history():
                     chat_history.add_user_message(msg["content"])
                 else:
                     chat_history.add_ai_message(msg["content"])
-            if len(messages) % 10 == 0:
-                if len(messages) == 0:
-                    return chat_history
-                long_term = summarize_questions_and_answers(messages=messages[:10])
-                assert_fact(fact=long_term, file_path="metta/user_memory.metta")
             return chat_history
     except FileNotFoundError:
         return ChatMessageHistory()
@@ -128,6 +123,7 @@ def _refine_query_with_context(user_query):
 
     with open("metta/user_memory.metta", "r") as f:
         long_term= f.read()
+    
     if not memory.messages:
         return user_query
         
@@ -161,6 +157,12 @@ def _generate_response(query):
     # Add system response to memory
     memory.add_ai_message(response)
     save_history(memory)  # Save updated chat history
-    
-    print(response)
+    with open(HISTORY_FILE, "r") as f:
+            msg = json.load(f)
+    if len(msg) % 10 == 0:
+                if len(msg) == 0:
+                    long_term = summarize_questions_and_answers(messages=msg[:10])
+                    assert_fact(fact=long_term, file_path="metta/user_memory.metta")
+
+    logging.info(f'response: {response}')
     return response
