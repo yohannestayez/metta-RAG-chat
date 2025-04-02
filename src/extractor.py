@@ -15,7 +15,7 @@ llm = GeminiModel()
 def process_pdf(text: str) -> list[dict]:
     logging.info("Processing book text...")
     splitter = RecursiveCharacterTextSplitter(
-        chunk_size=4000,
+        chunk_size=2000,
         chunk_overlap=200,
         separators=["\n\nChapter ", "\n\nSection ", "\n\n", "\n", ".", " "]
     )

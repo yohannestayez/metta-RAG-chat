@@ -6,11 +6,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class GeminiModel():
-    def __init__(self, api_key: str, model_provider,model_name="gemini-2.0-flash"): 
-        genai.configure(api_key=os.getenv('GEMINI_API'))
+    def __init__(self,api_key=os.getenv('GEMINI_API'), model_name="gemini-2.0-flash"): 
+        genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel(model_name or "gemini-2.0-flash")
         self.model_name = model_name
-        self.model_provider = model_provider
+        self.model_provider = 'gemini'
         self.api_key = api_key
 
     def generate(self, prompt: str,system_prompt=None, temperature=0.0, top_k=1) :
