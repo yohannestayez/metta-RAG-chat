@@ -1,1 +1,5 @@
 venv/
+.env
+__pycache__/
+schema.txt
+chat_history.json

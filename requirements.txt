@@ -1,1 +1,6 @@
 hyperon
+google-generativeai
+dotenv
+langchain
+flask
+werkzeug
